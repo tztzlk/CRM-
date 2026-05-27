@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block title %}Лиды — CRM{% endblock %}
+{% block page_title %}Лиды{% endblock %}
+
+{% block head_extra %}
+<style>
+  .priority-hot  { border-left: 4px solid #E53E3E !important; }
+  .priority-warm { border-left: 4px solid #D69E2E !important; }
+  .priority-cold { border-left: 4px solid #718096 !important; }
+  .score-badge { font-size: .7rem; font-weight: 700; min-width: 34px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# ── Баннер горячих лидов ───────────────────────────────────────────────── #}
+{% if hot_stale_count %}
+<a href="?priority=hot" class="text-decoration-none">
+  <div class="alert alert-danger d-flex align-items-center mb-3 py-2" role="alert">
+    <i class="bi bi-fire me-2 fs-5"></i>
+    <strong>{{ hot_stale_count }} горяч{{ hot_stale_count|pluralize:"ий лид ждёт,их лида ждут,их лидов ждут" }} звонка более 30 минут!</strong>
+    <span class="ms-2 text-danger-emphasis">Кликните, чтобы перейти к ним →</span>
+  </div>
+</a>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  {% if user.can_edit %}
+  <a href="{% url 'leads:create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> Новый лид
+  </a>
+  {% else %}<span></span>{% endif %}
+
+  <form class="d-flex gap-2 flex-wrap" method="get">
+    <input class="form-control form-control-sm" name="q" value="{{ q }}"
+           placeholder="Поиск..." style="width:180px">
+
+    <select class="form-select form-select-sm" name="priority" style="width:155px">
+      <option value="">Все приоритеты</option>
+      {% for val,label in priority_choices %}
+      <option value="{{ val }}" {% if priority == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <select class="form-select form-select-sm" name="status" style="width:155px">
+      <option value="">Все статусы</option>
+      {% for val,label in status_choices %}
+      <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <select class="form-select form-select-sm" name="source" style="width:145px">
+      <option value="">Все источники</option>
+      {% for val,label in source_choices %}
+      <option value="{{ val }}" {% if source == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <button class="btn btn-outline-secondary btn-sm">Найти</button>
+    {% if q or status or source or priority %}
+    <a href="{% url 'leads:list' %}" class="btn btn-outline-danger btn-sm">✕</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card shadow-sm">
+<table class="table table-hover mb-0 align-middle">
+  <thead class="table-light">
+    <tr>
+      <th style="width:36px"></th>
+      <th>Имя / Компания</th>
+      <th>Контакт</th>
+      <th>Источник</th>
+      <th>Статус</th>
+      <th>Ответственный</th>
+      <th>Создан</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for lead in leads %}
+  <tr class="priority-{{ lead.priority }}">
+    <td class="text-center">
+      <span class="badge score-badge
+        {% if lead.priority == 'hot' %}bg-danger
+        {% elif lead.priority == 'warm' %}bg-warning text-dark
+        {% else %}bg-secondary{% endif %}">
+        {{ lead.score }}
+      </span>
+    </td>
+    <td>
+      <a href="{{ lead.get_absolute_url }}" class="fw-semibold text-decoration-none">{{ lead.full_name }}</a>
+      {% if lead.position %}<span class="text-muted"> · <small>{{ lead.position }}</small></span>{% endif %}
+      {% if lead.company or lead.city %}
+      <br><small class="text-muted">
+        <i class="bi bi-building"></i>
+        {{ lead.company }}{% if lead.company and lead.city %}, {% endif %}{{ lead.city }}
+      </small>
+      {% endif %}
+      <br>
+      <span class="badge
+        {% if lead.priority == 'hot' %}bg-danger
+        {% elif lead.priority == 'warm' %}bg-warning text-dark
+        {% else %}bg-secondary{% endif %} bg-opacity-75" style="font-size:.65rem">
+        {{ lead.get_priority_display }}
+      </span>
+      {% if lead.next_contact_date %}
+      <span class="badge bg-info text-dark ms-1" style="font-size:.65rem">
+        <i class="bi bi-calendar-event"></i> {{ lead.next_contact_date|date:"d.m" }}
+      </span>
+      {% endif %}
+    </td>
+    <td>
+      {% if lead.phone %}
+      <div><a href="tel:{{ lead.phone }}" class="text-decoration-none small">
+        <i class="bi bi-telephone"></i> {{ lead.phone }}</a>
+      </div>
+      {% endif %}
+      {% if lead.telegram %}
+      <div><small class="text-muted"><i class="bi bi-telegram"></i> {{ lead.telegram }}</small></div>
+      {% endif %}
+      {% if lead.email %}<small class="text-muted">{{ lead.email }}</small>{% endif %}
+    </td>
+    <td><small>{{ lead.get_source_display }}</small></td>
+    <td>
+      <span class="badge {{ lead.status_badge_class }}">{{ lead.get_status_display }}</span>
+    </td>
+    <td><small>{{ lead.owner|default:'—' }}</small></td>
+    <td><small class="text-muted">{{ lead.created_at|date:"d.m.Y" }}</small></td>
+    <td class="text-end text-nowrap">
+      {% if user.can_edit and lead.status != 'converted' %}
+      <a href="{% url 'leads:convert' lead.pk %}" class="btn btn-sm btn-success" title="Конвертировать">
+        <i class="bi bi-arrow-right-circle"></i>
+      </a>
+      {% endif %}
+      {% if user.can_edit %}
+      <a href="{% url 'leads:update' lead.pk %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-pencil"></i>
+      </a>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="8" class="text-center text-muted py-4">Лиды не найдены</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm">
+    {% if page_obj.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&status={{ status }}&source={{ source }}&priority={{ priority }}">‹</a>
+    </li>
+    {% endif %}
+    <li class="page-item active">
+      <a class="page-link" href="#">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</a>
+    </li>
+    {% if page_obj.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&status={{ status }}&source={{ source }}&priority={{ priority }}">›</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

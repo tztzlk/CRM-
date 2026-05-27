@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Этапы воронки{% endblock %}
+{% block page_title %}Этапы воронки{% endblock %}
+{% block content %}
+<div class="mb-3 text-end">
+    <a href="{% url 'deals:stage_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Этап</a>
+</div>
+<div class="card"><table class="table mb-0 align-middle">
+    <thead class="table-light"><tr><th>Порядок</th><th>Название</th><th>Финальные флаги</th><th>Цвет</th><th></th></tr></thead>
+    <tbody>
+    {% for s in stages %}
+    <tr>
+        <td>{{ s.order }}</td>
+        <td>{{ s.name }}</td>
+        <td>
+            {% if s.is_won %}<span class="badge bg-success">Успех</span>{% endif %}
+            {% if s.is_lost %}<span class="badge bg-secondary">Отказ</span>{% endif %}
+        </td>
+        <td><span class="badge" style="background: {{ s.color }}">&nbsp;&nbsp;&nbsp;</span> {{ s.color }}</td>
+        <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'deals:stage_edit' s.pk %}">Редактировать</a></td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="text-center text-muted py-3">Этапы не настроены</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+{% endblock %}

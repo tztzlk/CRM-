@@ -1,0 +1,479 @@
+{% extends 'base.html' %}
+{% block title %}{{ lead }} — CRM{% endblock %}
+{% block page_title %}Лид: {{ lead }}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .score-ring {
+    width: 80px; height: 80px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 700; border: 5px solid;
+  }
+  .score-ring.hot  { border-color: #E53E3E; color: #E53E3E; }
+  .score-ring.warm { border-color: #D69E2E; color: #D69E2E; }
+  .score-ring.cold { border-color: #718096; color: #718096; }
+  .info-label { font-size: .75rem; color: #718096; text-transform: uppercase; letter-spacing: .04em; }
+  .info-value { font-size: .95rem; }
+  .section-card { border-left: 3px solid; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  {# ═══════════════ Левая колонка ═══════════════ #}
+  <div class="col-lg-8">
+
+    {# ── Контактная информация ── #}
+    <div class="card shadow-sm mb-4 section-card" style="border-left-color:#2B5BA8">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-person-vcard me-1 text-primary"></i> Контактная информация</span>
+        <div class="d-flex gap-2">
+          <span class="badge
+            {% if lead.priority == 'hot' %}bg-danger
+            {% elif lead.priority == 'warm' %}bg-warning text-dark
+            {% else %}bg-secondary{% endif %}">
+            {{ lead.get_priority_display }} · {{ lead.score }} баллов
+          </span>
+          <span class="badge {{ lead.status_badge_class }}">{{ lead.get_status_display }}</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">ФИО / Контакт</div>
+            <div class="info-value fw-semibold">{{ lead.full_name }}</div>
+          </div>
+          {% if lead.position %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Должность</div>
+            <div class="info-value">{{ lead.position }}</div>
+          </div>
+          {% endif %}
+          {% if lead.contact_preference %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Способ связи</div>
+            <div class="info-value">{{ lead.get_contact_preference_display }}</div>
+          </div>
+          {% endif %}
+
+          {% if lead.phone %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Телефон</div>
+            <div class="info-value">
+              <a href="tel:{{ lead.phone }}" class="btn btn-sm btn-outline-success py-0 px-2">
+                <i class="bi bi-telephone"></i> {{ lead.phone }}
+              </a>
+            </div>
+          </div>
+          {% endif %}
+          {% if lead.phone_alt %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Доп. телефон</div>
+            <div class="info-value">
+              <a href="tel:{{ lead.phone_alt }}" class="text-decoration-none">{{ lead.phone_alt }}</a>
+            </div>
+          </div>
+          {% endif %}
+          {% if lead.telegram %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Telegram</div>
+            <div class="info-value">
+              <a href="https://t.me/{{ lead.telegram|cut:'@' }}" target="_blank" class="text-decoration-none">
+                <i class="bi bi-telegram text-primary"></i> {{ lead.telegram }}
+              </a>
+            </div>
+          </div>
+          {% endif %}
+          {% if lead.email %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Email</div>
+            <div class="info-value">
+              <a href="mailto:{{ lead.email }}">{{ lead.email }}</a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# ── Компания ── #}
+    {% if lead.company or lead.industry or lead.city or lead.website or lead.company_size %}
+    <div class="card shadow-sm mb-4 section-card" style="border-left-color:#0BC5EA">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-building me-1 text-info"></i> Компания
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% if lead.company %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Название</div>
+            <div class="info-value fw-semibold">{{ lead.company }}</div>
+          </div>
+          {% endif %}
+          {% if lead.industry %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Отрасль</div>
+            <div class="info-value">{{ lead.get_industry_display }}</div>
+          </div>
+          {% endif %}
+          {% if lead.company_size %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Размер</div>
+            <div class="info-value">{{ lead.get_company_size_display }}</div>
+          </div>
+          {% endif %}
+          {% if lead.city %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Город / Регион</div>
+            <div class="info-value"><i class="bi bi-geo-alt text-muted"></i> {{ lead.city }}</div>
+          </div>
+          {% endif %}
+          {% if lead.website %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Сайт</div>
+            <div class="info-value">
+              <a href="{{ lead.website }}" target="_blank" rel="noopener" class="text-decoration-none">
+                <i class="bi bi-globe"></i> {{ lead.website|truncatechars:35 }}
+              </a>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── Детали сделки ── #}
+    <div class="card shadow-sm mb-4 section-card" style="border-left-color:#D69E2E">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-briefcase me-1 text-warning"></i> Детали сделки
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Источник</div>
+            <div class="info-value">{{ lead.get_source_display }}</div>
+          </div>
+          {% if lead.estimated_amount %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Потенциальная сумма</div>
+            <div class="info-value fw-semibold text-success">{{ lead.estimated_amount|floatformat:0 }} ₽</div>
+          </div>
+          {% endif %}
+          {% if lead.deal_urgency %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Срочность</div>
+            <div class="info-value">{{ lead.get_deal_urgency_display }}</div>
+          </div>
+          {% endif %}
+          {% if lead.next_contact_date %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Следующий контакт</div>
+            <div class="info-value
+              {% if lead.next_contact_date < today %}text-danger fw-semibold{% endif %}">
+              <i class="bi bi-calendar-event me-1"></i>{{ lead.next_contact_date|date:"d.m.Y" }}
+              {% if lead.next_contact_date < today %}<span class="badge bg-danger ms-1">просрочен</span>{% endif %}
+            </div>
+          </div>
+          {% endif %}
+          {% if lead.response_speed_hours is not None %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Скорость ответа</div>
+            <div class="info-value">{{ lead.response_speed_hours }} ч</div>
+          </div>
+          {% endif %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Создан</div>
+            <div class="info-value">{{ lead.created_at|date:"d.m.Y H:i" }}</div>
+          </div>
+          {% if lead.first_contact_at %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Первый контакт</div>
+            <div class="info-value">{{ lead.first_contact_at|date:"d.m.Y H:i" }}</div>
+          </div>
+          {% endif %}
+          <div class="col-sm-6 col-md-4">
+            <div class="info-label">Ответственный</div>
+            <div class="info-value">{{ lead.owner|default:'—' }}</div>
+          </div>
+
+          {% if lead.product_interest %}
+          <div class="col-12">
+            <div class="info-label">Интерес / Потребность</div>
+            <div class="info-value border rounded p-2 bg-light">{{ lead.product_interest|linebreaksbr }}</div>
+          </div>
+          {% endif %}
+
+          {% if lead.notes %}
+          <div class="col-12">
+            <div class="info-label">Заметки</div>
+            <div class="info-value text-muted">{{ lead.notes|linebreaksbr }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# ── UTM-метки ── #}
+    {% if lead.utm_source or lead.utm_medium or lead.utm_campaign %}
+    <div class="card shadow-sm mb-4 section-card" style="border-left-color:#718096">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-link-45deg me-1 text-secondary"></i> UTM-метки (трафик)
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% if lead.utm_source %}
+          <div class="col-md-4">
+            <div class="info-label">utm_source</div>
+            <div class="info-value"><code>{{ lead.utm_source }}</code></div>
+          </div>
+          {% endif %}
+          {% if lead.utm_medium %}
+          <div class="col-md-4">
+            <div class="info-label">utm_medium</div>
+            <div class="info-value"><code>{{ lead.utm_medium }}</code></div>
+          </div>
+          {% endif %}
+          {% if lead.utm_campaign %}
+          <div class="col-md-4">
+            <div class="info-label">utm_campaign</div>
+            <div class="info-value"><code>{{ lead.utm_campaign }}</code></div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── AI-анализ ── #}
+    <div class="card shadow-sm mb-4 section-card"
+         style="border-left-color:{% if lead.priority == 'hot' %}#E53E3E{% elif lead.priority == 'warm' %}#D69E2E{% else %}#718096{% endif %}">
+      <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-cpu me-1 text-primary"></i> AI-анализ лида</span>
+        {% if user.can_edit %}
+        <form method="post" action="{% url 'leads:api_recalculate' lead.pk %}" id="recalc-form">
+          {% csrf_token %}
+          <button class="btn btn-outline-secondary btn-sm" type="submit">
+            <i class="bi bi-arrow-clockwise"></i> Пересчитать
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="row align-items-center mb-3">
+          <div class="col-auto">
+            <div class="score-ring {{ lead.priority }}">{{ lead.score }}</div>
+          </div>
+          <div class="col">
+            <div class="h5 mb-1">{{ lead.get_priority_display }}</div>
+            <p class="text-muted mb-0 small">{{ recommendation }}</p>
+          </div>
+        </div>
+
+        <h6 class="text-muted mb-2 small text-uppercase">Разбивка по факторам</h6>
+        {% for key, factor in score_breakdown.items %}
+        <div class="mb-2">
+          <div class="d-flex justify-content-between mb-1">
+            <small>{{ factor.label }}</small>
+            <small class="fw-semibold">{{ factor.score }} / {{ factor.max }} — {{ factor.detail }}</small>
+          </div>
+          <div class="progress" style="height:7px;">
+            <div class="progress-bar
+              {% if factor.score == factor.max %}bg-success
+              {% elif factor.score > 0 %}bg-warning
+              {% else %}bg-secondary{% endif %}"
+              style="width: {% widthratio factor.score factor.max 100 %}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% if lead.score_updated_at %}
+        <p class="text-muted small mt-2 mb-0">
+          <i class="bi bi-clock me-1"></i>Скоринг обновлён: {{ lead.score_updated_at|date:"d.m.Y H:i" }}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Взаимодействия ── #}
+    <div class="card shadow-sm mb-4 section-card" style="border-left-color:#38A169">
+      <div class="card-header fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-chat-dots me-1 text-success"></i> Взаимодействия</span>
+        <span class="badge bg-secondary">{{ interactions|length }}</span>
+      </div>
+      <div class="card-body">
+        {% if user.can_edit %}
+        <form method="post" action="{% url 'leads:add_interaction' lead.pk %}" class="mb-3">
+          {% csrf_token %}
+          <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label small">Тип</label>
+              <select name="type" class="form-select form-select-sm">
+                <option value="call">📞 Звонок</option>
+                <option value="email">✉ Email</option>
+                <option value="meeting">🤝 Встреча</option>
+                <option value="message">💬 Сообщение</option>
+                <option value="note">📝 Заметка</option>
+              </select>
+            </div>
+            <div class="col-md-7">
+              <label class="form-label small">Описание</label>
+              <input type="text" name="content" class="form-control form-control-sm"
+                     placeholder="Что произошло..." required maxlength="500">
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-success btn-sm w-100" type="submit">
+                <i class="bi bi-plus"></i> Добавить
+              </button>
+            </div>
+          </div>
+        </form>
+        {% endif %}
+
+        {% for item in interactions %}
+        <div class="d-flex justify-content-between align-items-start border-bottom py-2">
+          <div>
+            <i class="bi {{ item.icon }} text-primary me-1"></i>
+            <span class="badge bg-light text-dark border me-1" style="font-size:.7rem">{{ item.get_type_display }}</span>
+            {{ item.content }}
+            <br>
+            <small class="text-muted">{{ item.author|default:'Система' }} · {{ item.created_at|date:"d.m.Y H:i" }}</small>
+          </div>
+          {% if user.can_edit %}
+          <form method="post" action="{% url 'leads:delete_interaction' item.pk %}" class="ms-2">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger border-0 py-0"
+                    onclick="return confirm('Удалить?')">
+              <i class="bi bi-x"></i>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-muted mb-0 small">Взаимодействий пока нет. Добавьте первый контакт выше.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# История скоринга #}
+    {% if score_logs %}
+    <div class="card shadow-sm">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-clock-history me-1"></i> История скоринга
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr><th>Время</th><th>До</th><th>После</th><th>Причина</th></tr>
+          </thead>
+          <tbody>
+          {% for log in score_logs %}
+          <tr>
+            <td><small>{{ log.created_at|date:"d.m H:i" }}</small></td>
+            <td><span class="badge bg-secondary">{{ log.score_before }}</span></td>
+            <td>
+              <span class="badge
+                {% if log.score_after >= 75 %}bg-danger
+                {% elif log.score_after >= 40 %}bg-warning text-dark
+                {% else %}bg-secondary{% endif %}">
+                {{ log.score_after }}
+              </span>
+            </td>
+            <td><small class="text-muted">{{ log.get_reason_display }}</small></td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# ═══════════════ Правая колонка — действия ═══════════════ #}
+  <div class="col-lg-4">
+    <div class="card shadow-sm mb-3 sticky-top" style="top:80px">
+      <div class="card-header fw-semibold">Действия</div>
+      <div class="card-body d-grid gap-2">
+        {% if lead.phone %}
+        <a href="tel:{{ lead.phone }}" class="btn btn-success">
+          <i class="bi bi-telephone-fill"></i> Позвонить {{ lead.phone }}
+        </a>
+        {% endif %}
+        {% if lead.telegram %}
+        <a href="https://t.me/{{ lead.telegram|cut:'@' }}" target="_blank" class="btn btn-outline-primary">
+          <i class="bi bi-telegram"></i> Написать в Telegram
+        </a>
+        {% endif %}
+        {% if lead.email %}
+        <a href="mailto:{{ lead.email }}" class="btn btn-outline-secondary">
+          <i class="bi bi-envelope"></i> Написать email
+        </a>
+        {% endif %}
+        {% if lead.website %}
+        <a href="{{ lead.website }}" target="_blank" class="btn btn-outline-info btn-sm">
+          <i class="bi bi-globe"></i> Открыть сайт
+        </a>
+        {% endif %}
+
+        <hr class="my-1">
+
+        {% if user.can_edit and lead.status != 'converted' %}
+        <a href="{% url 'leads:convert' lead.pk %}" class="btn btn-warning">
+          <i class="bi bi-arrow-right-circle"></i> Конвертировать в клиента
+        </a>
+        {% endif %}
+        {% if user.can_edit %}
+        <a href="{% url 'leads:update' lead.pk %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-pencil"></i> Редактировать
+        </a>
+        <a href="{% url 'leads:delete' lead.pk %}" class="btn btn-outline-danger btn-sm">
+          <i class="bi bi-trash"></i> Удалить
+        </a>
+        {% endif %}
+        <a href="{% url 'leads:list' %}" class="btn btn-link btn-sm">← К списку лидов</a>
+      </div>
+    </div>
+
+    {% if lead.next_contact_date %}
+    <div class="card shadow-sm mb-3
+      {% if lead.next_contact_date < today %}border-danger{% else %}border-warning{% endif %}">
+      <div class="card-body text-center">
+        <div class="small text-muted">Следующий контакт</div>
+        <div class="h5 mt-1
+          {% if lead.next_contact_date < today %}text-danger{% else %}text-warning{% endif %}">
+          <i class="bi bi-calendar-event me-1"></i>{{ lead.next_contact_date|date:"d.m.Y" }}
+        </div>
+        {% if lead.next_contact_date < today %}
+        <span class="badge bg-danger">Просрочен!</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if lead.converted_client %}
+    <div class="alert alert-success">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      Конвертирован:<br>
+      <a href="{{ lead.converted_client.get_absolute_url }}" class="alert-link fw-semibold">
+        {{ lead.converted_client }}
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('recalc-form')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  fetch(this.action, {
+    method: 'POST',
+    headers: {'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value}
+  }).then(() => location.reload());
+});
+</script>
+{% endblock %}

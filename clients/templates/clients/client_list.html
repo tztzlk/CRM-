@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Клиенты{% endblock %}
+{% block page_title %}Клиенты{% endblock %}
+{% block content %}
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Поиск по имени, компании, телефону, email">
+    </div>
+    <div class="col-md-3">
+        <select name="source" class="form-select">
+            <option value="">Все источники</option>
+            {% for code, label in source_choices %}
+                <option value="{{ code }}" {% if source == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100">Найти</button></div>
+    <div class="col-md-2 text-end">
+        {% if user.can_edit %}
+        <a href="{% url 'clients:create' %}" class="btn btn-primary w-100">
+            <i class="bi bi-plus-lg"></i> Клиент
+        </a>
+        {% endif %}
+    </div>
+</form>
+
+<div class="card">
+    <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+        <tr><th>ФИО</th><th>Компания</th><th>Телефон</th><th>Email</th>
+            <th>Источник</th><th>Сделок</th><th>Сумма</th><th>Ответственный</th></tr>
+        </thead>
+        <tbody>
+        {% for c in clients %}
+        <tr>
+            <td><a href="{{ c.get_absolute_url }}">{{ c.full_name }}</a></td>
+            <td>{{ c.company }}</td>
+            <td>{{ c.phone }}</td>
+            <td>{{ c.email }}</td>
+            <td><span class="badge bg-light text-dark border">{{ c.get_source_display }}</span></td>
+            <td>{{ c.deals_count }}</td>
+            <td>{{ c.deals_amount|default:0|floatformat:0 }}</td>
+            <td>{{ c.owner|default:'—' }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">Клиентов не найдено</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&source={{ source }}">←</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&source={{ source }}">→</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% block title %}Отчёты{% endblock %}
+{% block page_title %}Отчёты{% endblock %}
+{% block content %}
+
+<form method="get" class="row g-2 mb-4 align-items-end">
+  <div class="col-md-3">
+    <label class="form-label">С даты</label>
+    <input type="date" name="start" value="{{ start }}" class="form-control">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">По дату</label>
+    <input type="date" name="end" value="{{ end }}" class="form-control">
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100">Применить</button>
+  </div>
+  <div class="col-md-2">
+    <a href="?" class="btn btn-outline-secondary w-100">Сброс</a>
+  </div>
+  <div class="col-md-1">
+    <a href="{% url 'reports:export_csv' %}?start={{ start }}&end={{ end }}"
+       class="btn btn-outline-success w-100" title="Экспорт сделок CSV">
+      <i class="bi bi-download"></i> Сделки
+    </a>
+  </div>
+  <div class="col-md-1">
+    <a href="{% url 'reports:export_leads_csv' %}"
+       class="btn btn-outline-info w-100" title="Экспорт лидов с AI-скорингом">
+      <i class="bi bi-cpu"></i> Лиды
+    </a>
+  </div>
+</form>
+
+{# ── KPI cards ── #}
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card text-center"><div class="card-body">
+    <div class="text-muted small">Всего сделок</div>
+    <div class="h3">{{ total }}</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card text-center bg-success-subtle"><div class="card-body">
+    <div class="text-muted small">Успешных</div>
+    <div class="h3 text-success">{{ won }}</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card text-center bg-secondary-subtle"><div class="card-body">
+    <div class="text-muted small">Отказов</div>
+    <div class="h3">{{ lost }}</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card text-center bg-warning-subtle"><div class="card-body">
+    <div class="text-muted small">Конверсия</div>
+    <div class="h3">{{ conversion }}%</div>
+  </div></div></div>
+</div>
+
+{# ── AI Widget: Hot leads requiring attention ── #}
+{% if hot_stale_leads %}
+<div class="card border-danger mb-4">
+  <div class="card-header bg-danger text-white fw-semibold">
+    <i class="bi bi-fire me-1"></i>
+    Горячие лиды без активности более 1 часа
+    <span class="badge bg-white text-danger ms-1">{{ hot_stale_leads|length }}</span>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr><th>Лид</th><th>Источник</th><th>Балл</th><th>Создан</th><th>Ответственный</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for lead in hot_stale_leads %}
+      <tr>
+        <td><a href="{{ lead.get_absolute_url }}">{{ lead.full_name }}</a></td>
+        <td><small>{{ lead.get_source_display }}</small></td>
+        <td><span class="badge bg-danger">{{ lead.score }}</span></td>
+        <td><small class="text-muted">{{ lead.created_at|date:"d.m H:i" }}</small></td>
+        <td><small>{{ lead.owner|default:'—' }}</small></td>
+        <td>
+          {% if lead.phone %}
+          <a href="tel:{{ lead.phone }}" class="btn btn-sm btn-success py-0">
+            <i class="bi bi-telephone"></i>
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── Charts row 1 ── #}
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6>Сделки по этапам воронки</h6>
+      <canvas id="chartStage" height="220"></canvas>
+    </div></div>
+  </div>
+  <div class="col-md-6">
+    <div class="card"><div class="card-body">
+      <h6>Сумма сделок по месяцам</h6>
+      <canvas id="chartMonth" height="220"></canvas>
+    </div></div>
+  </div>
+</div>
+
+{# ── Charts row 2 ── #}
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <h6><i class="bi bi-cpu me-1 text-primary"></i> Распределение по приоритетам</h6>
+      <canvas id="chartPriority" height="220"></canvas>
+    </div></div>
+  </div>
+  <div class="col-md-8">
+    <div class="card"><div class="card-body">
+      <h6><i class="bi bi-bar-chart me-1 text-success"></i> Конверсия по источникам лидов</h6>
+      <canvas id="chartSourceConv" height="220"></canvas>
+    </div></div>
+  </div>
+</div>
+
+{# ── Row 3: Status pie + top managers ── #}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <h6>Распределение статусов сделок</h6>
+      <canvas id="chartStatus" height="220"></canvas>
+    </div></div>
+  </div>
+  <div class="col-md-8">
+    <div class="card"><div class="card-body">
+      <h6>ТОП-5 менеджеров (по выручке)</h6>
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Менеджер</th><th>Сделок</th><th>Сумма</th></tr></thead>
+        <tbody>
+        {% for m in top_managers %}
+        <tr>
+          <td>{{ m.owner__first_name }} {{ m.owner__last_name }}
+            <small class="text-muted">({{ m.owner__username|default:'—' }})</small></td>
+          <td>{{ m.n }}</td>
+          <td>{{ m.amount|floatformat:0 }} ₽</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-muted text-center">Нет данных</td></tr>
+        {% endfor %}
+        </tbody>
+        <tfoot><tr class="table-light">
+          <th>Итого выручка</th><th></th><th>{{ total_revenue|floatformat:0 }} ₽</th>
+        </tr></tfoot>
+      </table>
+    </div></div>
+  </div>
+</div>
+
+{# ── Source conversion table ── #}
+<div class="card mt-3">
+  <div class="card-header fw-semibold">
+    <i class="bi bi-funnel me-1"></i> Детальная конверсия по источникам
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr><th>Источник</th><th>Всего лидов</th><th>Конвертировано</th><th>Конверсия</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for row in source_conversion %}
+      <tr>
+        <td>{{ row.source }}</td>
+        <td>{{ row.total }}</td>
+        <td>{{ row.converted }}</td>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="progress flex-grow-1" style="height:6px;">
+              <div class="progress-bar bg-success" style="width:{{ row.rate }}%"></div>
+            </div>
+            <span class="text-nowrap">{{ row.rate }}%</span>
+          </div>
+        </td>
+        <td></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ by_stage|json_script:"data-stage" }}
+{{ by_month|json_script:"data-month" }}
+{{ priority_dist|json_script:"data-priority" }}
+{{ source_conversion|json_script:"data-source-conv" }}
+<script>
+(function(){
+    const stages = JSON.parse(document.getElementById('data-stage').textContent);
+    const months = JSON.parse(document.getElementById('data-month').textContent);
+    const priorities = JSON.parse(document.getElementById('data-priority').textContent);
+    const srcConv = JSON.parse(document.getElementById('data-source-conv').textContent);
+
+    new Chart(document.getElementById('chartStage'), {
+        type: 'bar',
+        data: {
+            labels: stages.map(s => s.name),
+            datasets: [{ label: 'Сделок', data: stages.map(s => s.n || 0),
+                backgroundColor: stages.map(s => s.color || '#0d6efd') }]
+        },
+        options: { plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('chartMonth'), {
+        type: 'line',
+        data: {
+            labels: months.map(m => m.month),
+            datasets: [{ label: 'Сумма (₽)', data: months.map(m => m.amount),
+                borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.15)',
+                tension: .3, fill: true }]
+        }
+    });
+
+    new Chart(document.getElementById('chartStatus'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Успешные', 'Отказы', 'Открытые'],
+            datasets: [{ data: [{{ won }}, {{ lost }}, {{ open }}],
+                backgroundColor: ['#198754', '#6c757d', '#0dcaf0'] }]
+        }
+    });
+
+    new Chart(document.getElementById('chartPriority'), {
+        type: 'doughnut',
+        data: {
+            labels: priorities.map(p => p.label),
+            datasets: [{ data: priorities.map(p => p.n),
+                backgroundColor: ['#E53E3E', '#D69E2E', '#718096'] }]
+        }
+    });
+
+    new Chart(document.getElementById('chartSourceConv'), {
+        type: 'bar',
+        data: {
+            labels: srcConv.map(r => r.source),
+            datasets: [
+                { label: 'Всего лидов', data: srcConv.map(r => r.total),
+                  backgroundColor: 'rgba(13,110,253,.3)' },
+                { label: 'Конвертировано', data: srcConv.map(r => r.converted),
+                  backgroundColor: '#198754' },
+            ]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+})();
+</script>
+{% endblock %}

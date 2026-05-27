@@ -1,0 +1,5 @@
+Django>=5.0,<6.0
+django-filter>=24.0
+python-decouple>=3.8
+# Раскомментируйте для PostgreSQL:
+# psycopg[binary]>=3.1

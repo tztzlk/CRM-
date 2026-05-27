@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Редактировать лид{% else %}Новый лид{% endif %} — CRM{% endblock %}
+{% block page_title %}{% if object %}Редактировать: {{ object }}{% else %}Новый лид{% endif %}{% endblock %}
+
+{% block content %}
+<form method="post" id="lead-form">
+{% csrf_token %}
+<div class="row g-4">
+
+  {# ── Левая колонка ── #}
+  <div class="col-lg-8">
+
+    {# Контактная информация #}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-primary text-white">
+        <i class="bi bi-person-vcard me-1"></i> Контактная информация
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">ФИО / Контактное лицо <span class="text-danger">*</span></label>
+            {{ form.full_name.errors }}
+            <input type="text" name="full_name"
+                   class="form-control {% if form.full_name.errors %}is-invalid{% endif %}"
+                   value="{{ form.full_name.value|default:'' }}"
+                   placeholder="Иванов Иван Иванович" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Должность</label>
+            <input type="text" name="position"
+                   class="form-control"
+                   value="{{ form.position.value|default:'' }}"
+                   placeholder="Директор по закупкам">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Телефон</label>
+            <input type="tel" name="phone"
+                   class="form-control"
+                   value="{{ form.phone.value|default:'' }}"
+                   placeholder="+7 (999) 123-45-67">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Доп. телефон</label>
+            <input type="tel" name="phone_alt"
+                   class="form-control"
+                   value="{{ form.phone_alt.value|default:'' }}"
+                   placeholder="+7 (999) 765-43-21">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Telegram</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-telegram"></i></span>
+              <input type="text" name="telegram"
+                     class="form-control"
+                     value="{{ form.telegram.value|default:'' }}"
+                     placeholder="@username">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email" name="email"
+                   class="form-control"
+                   value="{{ form.email.value|default:'' }}"
+                   placeholder="ivan@company.ru">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Предпочтительный способ связи</label>
+            <select name="contact_preference" class="form-select">
+              <option value="">— не указано —</option>
+              {% for val, lbl in form.fields.contact_preference.choices %}
+              {% if val %}
+              <option value="{{ val }}" {% if form.contact_preference.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Информация о компании #}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-info text-white">
+        <i class="bi bi-building me-1"></i> Компания
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Название компании</label>
+            <input type="text" name="company"
+                   class="form-control"
+                   value="{{ form.company.value|default:'' }}"
+                   placeholder="ООО «Ромашка»">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Сайт компании</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-globe"></i></span>
+              <input type="url" name="website"
+                     class="form-control"
+                     value="{{ form.website.value|default:'' }}"
+                     placeholder="https://example.com">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Отрасль</label>
+            <select name="industry" class="form-select">
+              <option value="">— не указано —</option>
+              {% for val, lbl in form.fields.industry.choices %}
+              {% if val %}
+              <option value="{{ val }}" {% if form.industry.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Размер компании</label>
+            <select name="company_size" class="form-select">
+              <option value="">— не указано —</option>
+              {% for val, lbl in form.fields.company_size.choices %}
+              {% if val %}
+              <option value="{{ val }}" {% if form.company_size.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Город / Регион</label>
+            <input type="text" name="city"
+                   class="form-control"
+                   value="{{ form.city.value|default:'' }}"
+                   placeholder="Москва">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# О сделке #}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-warning text-dark">
+        <i class="bi bi-briefcase me-1"></i> Детали сделки
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Источник <span class="text-danger">*</span></label>
+            <select name="source" class="form-select" required>
+              {% for val, lbl in form.fields.source.choices %}
+              <option value="{{ val }}" {% if form.source.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Потенциальная сумма (₽)</label>
+            <div class="input-group">
+              <span class="input-group-text">₽</span>
+              <input type="number" name="estimated_amount"
+                     class="form-control"
+                     value="{{ form.estimated_amount.value|default:'' }}"
+                     placeholder="150000" min="0" step="1000">
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Интерес / Потребность клиента</label>
+            <textarea name="product_interest" class="form-control" rows="3"
+                      placeholder="Что ищет клиент, какая задача, боль или вопрос...">{{ form.product_interest.value|default:'' }}</textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Срочность сделки</label>
+            <select name="deal_urgency" class="form-select">
+              {% for val, lbl in form.fields.deal_urgency.choices %}
+              <option value="{{ val }}" {% if form.deal_urgency.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Дата следующего контакта</label>
+            <input type="date" name="next_contact_date"
+                   class="form-control"
+                   value="{{ form.next_contact_date.value|default:'' }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Скорость ответа клиента (ч)</label>
+            <input type="number" name="response_speed_hours"
+                   class="form-control"
+                   value="{{ form.response_speed_hours.value|default:'' }}"
+                   placeholder="ч, например: 2" min="0" step="0.5">
+            <div class="form-text">Влияет на AI-скоринг</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Заметки</label>
+            <textarea name="notes" class="form-control" rows="3"
+                      placeholder="Дополнительная информация...">{{ form.notes.value|default:'' }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# UTM — раскрывающийся блок #}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold" style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#utm-block">
+        <i class="bi bi-link-45deg me-1"></i> UTM-метки
+        <i class="bi bi-chevron-down ms-auto float-end"></i>
+      </div>
+      <div id="utm-block" class="collapse {% if form.utm_source.value or form.utm_medium.value or form.utm_campaign.value %}show{% endif %}">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">utm_source</label>
+              <input type="text" name="utm_source" class="form-control"
+                     value="{{ form.utm_source.value|default:'' }}"
+                     placeholder="google, yandex, vk...">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">utm_medium</label>
+              <input type="text" name="utm_medium" class="form-control"
+                     value="{{ form.utm_medium.value|default:'' }}"
+                     placeholder="cpc, email, referral...">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">utm_campaign</label>
+              <input type="text" name="utm_campaign" class="form-control"
+                     value="{{ form.utm_campaign.value|default:'' }}"
+                     placeholder="summer_sale_2025">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {# ── Правая колонка — статус и управление ── #}
+  <div class="col-lg-4">
+    <div class="card shadow-sm mb-3 sticky-top" style="top:80px">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-sliders me-1"></i> Управление
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Статус</label>
+          <select name="status" class="form-select">
+            {% for val, lbl in form.fields.status.choices %}
+            <option value="{{ val }}" {% if form.status.value == val %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Ответственный менеджер</label>
+          <select name="owner" class="form-select">
+            <option value="">— не назначен —</option>
+            {% for val, lbl in form.fields.owner.choices %}
+            {% if val %}
+            <option value="{{ val }}" {% if form.owner.value|stringformat:'s' == val|stringformat:'s' %}selected{% endif %}>{{ lbl }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+
+        <hr>
+
+        {% if object %}
+        <div class="mb-2 p-2 rounded text-center"
+             style="background: {% if object.priority == 'hot' %}#FED7D7{% elif object.priority == 'warm' %}#FEFCBF{% else %}#EDF2F7{% endif %}">
+          <div class="small text-muted">AI-скоринг</div>
+          <div class="h3 mb-0
+            {% if object.priority == 'hot' %}text-danger
+            {% elif object.priority == 'warm' %}text-warning
+            {% else %}text-secondary{% endif %}">
+            {{ object.score }}
+          </div>
+          <div class="small">{{ object.get_priority_display }}</div>
+        </div>
+        {% endif %}
+
+        <div class="d-grid gap-2 mt-3">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i>
+            {% if object %}Сохранить изменения{% else %}Создать лид{% endif %}
+          </button>
+          <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'leads:list' %}{% endif %}"
+             class="btn btn-outline-secondary">Отмена</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</form>
+{% endblock %}

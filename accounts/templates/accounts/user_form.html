@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Пользователь{% endblock %}
+{% block page_title %}{% if object %}Редактирование пользователя{% else %}Новый пользователь{% endif %}{% endblock %}
+{% block content %}
+<div class="card"><div class="card-body">
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for f in form %}
+    <div class="mb-3">
+        <label class="form-label">{{ f.label }}</label>
+        {{ f }}
+        {% if f.help_text %}<div class="form-text">{{ f.help_text|safe }}</div>{% endif %}
+        {% if f.errors %}<div class="text-danger small">{{ f.errors }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+    <a class="btn btn-outline-secondary" href="{% url 'accounts:user_list' %}">Отмена</a>
+</form>
+</div></div>
+{% endblock %}

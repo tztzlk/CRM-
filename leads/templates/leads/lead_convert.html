@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Конвертировать лид — CRM{% endblock %}
+{% block page_title %}Конвертировать лид в клиента{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold">Данные лида</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Имя</dt>
+                    <dd class="col-sm-8">{{ lead.full_name }}</dd>
+                    {% if lead.company %}
+                    <dt class="col-sm-4">Компания</dt>
+                    <dd class="col-sm-8">{{ lead.company }}</dd>
+                    {% endif %}
+                    {% if lead.phone %}
+                    <dt class="col-sm-4">Телефон</dt>
+                    <dd class="col-sm-8">{{ lead.phone }}</dd>
+                    {% endif %}
+                    {% if lead.email %}
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ lead.email }}</dd>
+                    {% endif %}
+                    <dt class="col-sm-4">Источник</dt>
+                    <dd class="col-sm-8">{{ lead.get_source_display }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="alert alert-info small">
+            <i class="bi bi-info-circle me-1"></i>
+            Будет создан клиент с этими данными, а также новая сделка в выбранном этапе воронки.
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Параметры сделки</div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ field.label }}</label>
+                        {% if field.field.widget.input_type == 'select' %}
+                            <select name="{{ field.html_name }}" class="form-select {% if field.errors %}is-invalid{% endif %}">
+                                {% for val, lbl in field.field.choices %}
+                                <option value="{{ val }}" {% if field.value|stringformat:'s' == val|stringformat:'s' %}selected{% endif %}>{{ lbl }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <input type="{{ field.field.widget.input_type }}"
+                                   name="{{ field.html_name }}"
+                                   class="form-control {% if field.errors %}is-invalid{% endif %}"
+                                   value="{{ field.value|default:'' }}">
+                        {% endif %}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% for err in field.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success" type="submit">
+                            <i class="bi bi-arrow-right-circle me-1"></i>Конвертировать
+                        </button>
+                        <a href="{{ lead.get_absolute_url }}" class="btn btn-outline-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

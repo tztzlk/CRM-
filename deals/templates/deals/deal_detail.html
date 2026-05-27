@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}{{ deal.title }}{% endblock %}
+{% block page_title %}{{ deal.title }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card"><div class="card-body">
+            <h5 class="mb-3">Сделка</h5>
+            <dl class="row">
+                <dt class="col-sm-5">Клиент</dt><dd class="col-sm-7"><a href="{{ deal.client.get_absolute_url }}">{{ deal.client.full_name }}</a></dd>
+                <dt class="col-sm-5">Этап</dt><dd class="col-sm-7"><span class="badge" style="background:{{ deal.stage.color }}">{{ deal.stage.name }}</span></dd>
+                <dt class="col-sm-5">Статус</dt><dd class="col-sm-7">{{ deal.get_status_display }}</dd>
+                <dt class="col-sm-5">Сумма</dt><dd class="col-sm-7">{{ deal.amount|floatformat:0 }} ₽</dd>
+                <dt class="col-sm-5">Ответственный</dt><dd class="col-sm-7">{{ deal.owner|default:'—' }}</dd>
+                <dt class="col-sm-5">Ожид. закрытие</dt><dd class="col-sm-7">{{ deal.expected_close_date|default:'—' }}</dd>
+                <dt class="col-sm-5">Создана</dt><dd class="col-sm-7">{{ deal.created_at|date:'d.m.Y H:i' }}</dd>
+                {% if deal.closed_at %}<dt class="col-sm-5">Закрыта</dt><dd class="col-sm-7">{{ deal.closed_at|date:'d.m.Y H:i' }}</dd>{% endif %}
+            </dl>
+            {% if deal.notes %}<hr><p class="text-muted">{{ deal.notes|linebreaksbr }}</p>{% endif %}
+            {% if user.can_edit %}
+            <a href="{% url 'deals:edit' deal.pk %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+            <a href="{% url 'deals:delete' deal.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+            {% endif %}
+        </div></div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card"><div class="card-body">
+            <h5>История взаимодействий по сделке</h5>
+            <div class="timeline mt-3">
+                {% for i in interactions %}
+                <div class="timeline-item">
+                    <div class="d-flex justify-content-between">
+                        <div><i class="bi {{ i.icon }}"></i> <strong>{{ i.get_type_display }}</strong>
+                            {% if i.subject %} — {{ i.subject }}{% endif %}</div>
+                        <small class="text-muted">{{ i.created_at|date:'d.m.Y H:i' }} · {{ i.author|default:'—' }}</small>
+                    </div>
+                    <div class="text-secondary small mt-1">{{ i.content|linebreaksbr }}</div>
+                </div>
+                {% empty %}
+                <p class="text-muted mb-0">Записей пока нет. Добавьте через карточку клиента.</p>
+                {% endfor %}
+            </div>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

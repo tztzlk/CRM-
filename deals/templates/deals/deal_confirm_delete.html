@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Удаление сделки{% endblock %}
+{% block page_title %}Удаление сделки{% endblock %}
+{% block content %}
+<div class="card"><div class="card-body">
+    <p>Удалить сделку «<strong>{{ object.title }}</strong>»?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger">Удалить</button>
+        <a class="btn btn-outline-secondary" href="{% url 'deals:detail' object.pk %}">Отмена</a>
+    </form>
+</div></div>
+{% endblock %}

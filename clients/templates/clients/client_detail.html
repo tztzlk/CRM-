@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}{{ client.full_name }}{% endblock %}
+{% block page_title %}{{ client.full_name }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="mb-3">Контакты</h5>
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Компания</dt><dd class="col-sm-7">{{ client.company|default:'—' }}</dd>
+                    <dt class="col-sm-5">Телефон</dt><dd class="col-sm-7">{{ client.phone|default:'—' }}</dd>
+                    <dt class="col-sm-5">Email</dt><dd class="col-sm-7">{{ client.email|default:'—' }}</dd>
+                    <dt class="col-sm-5">Источник</dt><dd class="col-sm-7">{{ client.get_source_display }}</dd>
+                    <dt class="col-sm-5">Ответственный</dt><dd class="col-sm-7">{{ client.owner|default:'—' }}</dd>
+                    <dt class="col-sm-5">Создан</dt><dd class="col-sm-7">{{ client.created_at|date:'d.m.Y H:i' }}</dd>
+                </dl>
+                {% if client.notes %}
+                <hr><div class="text-muted small">{{ client.notes|linebreaksbr }}</div>
+                {% endif %}
+                {% if user.can_edit %}
+                <div class="mt-3 d-flex gap-2">
+                    <a href="{% url 'clients:edit' client.pk %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+                    <a href="{% url 'clients:delete' client.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <h5 class="mb-0">Сделки</h5>
+                    {% if user.can_edit %}
+                    <a href="{% url 'deals:create' %}?client={{ client.pk }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-lg"></i> Сделка
+                    </a>
+                    {% endif %}
+                </div>
+                {% if deals %}
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Название</th><th>Этап</th><th>Статус</th><th>Сумма</th><th></th></tr></thead>
+                    <tbody>
+                    {% for d in deals %}
+                    <tr>
+                        <td><a href="{{ d.get_absolute_url }}">{{ d.title }}</a></td>
+                        <td><span class="badge" style="background:{{ d.stage.color }}">{{ d.stage.name }}</span></td>
+                        <td>{{ d.get_status_display }}</td>
+                        <td>{{ d.amount|floatformat:0 }}</td>
+                        <td class="text-end"><a class="btn btn-sm btn-link" href="{{ d.get_absolute_url }}">→</a></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}<p class="text-muted mb-0">Сделок пока нет</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5>История взаимодействий</h5>
+                {% if user.can_edit %}
+                <form method="post" action="{% url 'interactions:add_for_client' client.pk %}" class="border rounded p-2 mb-3">
+                    {% csrf_token %}
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <select name="type" class="form-select form-select-sm">
+                                <option value="call">Звонок</option>
+                                <option value="email">Email</option>
+                                <option value="meeting">Встреча</option>
+                                <option value="message">Сообщение</option>
+                                <option value="note" selected>Заметка</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input name="subject" class="form-control form-control-sm" placeholder="Тема">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="deal" class="form-select form-select-sm">
+                                <option value="">— без сделки —</option>
+                                {% for d in deals %}<option value="{{ d.id }}">{{ d.title }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-sm btn-primary w-100">Добавить</button>
+                        </div>
+                        <div class="col-12">
+                            <textarea name="content" rows="2" class="form-control form-control-sm" placeholder="Содержание" required></textarea>
+                        </div>
+                    </div>
+                </form>
+                {% endif %}
+
+                <div class="timeline">
+                    {% for i in interactions %}
+                    <div class="timeline-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <i class="bi {{ i.icon }}"></i>
+                                <strong>{{ i.get_type_display }}</strong>
+                                {% if i.subject %}— {{ i.subject }}{% endif %}
+                                {% if i.deal %}<span class="badge bg-light text-dark border ms-1">{{ i.deal.title }}</span>{% endif %}
+                            </div>
+                            <small class="text-muted">{{ i.created_at|date:'d.m.Y H:i' }} · {{ i.author|default:'—' }}</small>
+                        </div>
+                        <div class="text-secondary small mt-1">{{ i.content|linebreaksbr }}</div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted mb-0">Записей пока нет</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
