@@ -65,13 +65,13 @@ class LeadScorer:
         # Factor 4: Potential deal size (max 15)
         amount = float(lead.estimated_amount or 0)
         if amount > 500_000:
-            deal_score, deal_detail = 15, 'свыше 500 000 ₽'
+            deal_score, deal_detail = 15, 'свыше 500 000 ₸'
         elif amount > 200_000:
-            deal_score, deal_detail = 10, 'свыше 200 000 ₽'
+            deal_score, deal_detail = 10, 'свыше 200 000 ₸'
         elif amount > 50_000:
-            deal_score, deal_detail = 5, 'свыше 50 000 ₽'
+            deal_score, deal_detail = 5, 'свыше 50 000 ₸'
         elif amount > 0:
-            deal_score, deal_detail = 2, f'{amount:,.0f} ₽'.replace(',', ' ')
+            deal_score, deal_detail = 2, f'{amount:,.0f} ₸'.replace(',', ' ')
         else:
             deal_score, deal_detail = 0, 'не указана'
         breakdown['deal_size'] = {

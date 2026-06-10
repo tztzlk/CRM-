@@ -139,14 +139,14 @@
           <td>{{ m.owner__first_name }} {{ m.owner__last_name }}
             <small class="text-muted">({{ m.owner__username|default:'—' }})</small></td>
           <td>{{ m.n }}</td>
-          <td>{{ m.amount|floatformat:0 }} ₽</td>
+          <td>{{ m.amount|floatformat:0 }} ₸</td>
         </tr>
         {% empty %}
         <tr><td colspan="3" class="text-muted text-center">Нет данных</td></tr>
         {% endfor %}
         </tbody>
         <tfoot><tr class="table-light">
-          <th>Итого выручка</th><th></th><th>{{ total_revenue|floatformat:0 }} ₽</th>
+          <th>Итого выручка</th><th></th><th>{{ total_revenue|floatformat:0 }} ₸</th>
         </tr></tfoot>
       </table>
     </div></div>
@@ -214,7 +214,7 @@
         type: 'line',
         data: {
             labels: months.map(m => m.month),
-            datasets: [{ label: 'Сумма (₽)', data: months.map(m => m.amount),
+            datasets: [{ label: 'Сумма (₸)', data: months.map(m => m.amount),
                 borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.15)',
                 tension: .3, fill: true }]
         }

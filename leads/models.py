@@ -88,7 +88,7 @@ class Lead(models.Model):
     product_interest = models.TextField('Интерес / Потребность', blank=True,
                                         help_text='Что ищет клиент, какая задача')
     estimated_amount = models.DecimalField(
-        'Потенциальная сумма (₽)', max_digits=12, decimal_places=2, null=True, blank=True,
+        'Потенциальная сумма (₸)', max_digits=12, decimal_places=2, null=True, blank=True,
     )
     deal_urgency = models.CharField(
         'Срочность сделки', max_length=16, choices=DealUrgency.choices,

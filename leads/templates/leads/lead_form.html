@@ -90,7 +90,7 @@
             <input type="text" name="company"
                    class="form-control"
                    value="{{ form.company.value|default:'' }}"
-                   placeholder="ООО «Ромашка»">
+                   placeholder="ТОО «Ромашка»">
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold">Сайт компании</label>
@@ -151,9 +151,9 @@
             </select>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold">Потенциальная сумма (₽)</label>
+            <label class="form-label fw-semibold">Потенциальная сумма (₸)</label>
             <div class="input-group">
-              <span class="input-group-text">₽</span>
+              <span class="input-group-text">₸</span>
               <input type="number" name="estimated_amount"
                      class="form-control"
                      value="{{ form.estimated_amount.value|default:'' }}"

@@ -25,14 +25,14 @@ STAGES = [
 ]
 
 CLIENTS = [
-    ('Иванов Иван Иванович', 'ООО Ромашка', 'ivanov@romashka.ru', '+7 900 100-10-10', 'website'),
-    ('Петрова Анна Сергеевна', 'ИП Петрова', 'a.petrova@gmail.com', '+7 911 222-33-44', 'referral'),
-    ('Кузнецов Алексей', 'ЗАО Стройпром', 'kuznetsov@stroyprom.ru', '+7 921 555-77-99', 'ads'),
-    ('Сидорова Мария', 'ООО Цветочный мир', 'sidorova@flowers.ru', '+7 905 333-22-11', 'social'),
-    ('Орлов Дмитрий', 'ООО ТехноСтиль', 'orlov@technostyle.ru', '+7 916 777-88-99', 'website'),
-    ('Лебедева Ольга', 'ИП Лебедева', 'olga.lebedeva@mail.ru', '+7 903 111-22-33', 'referral'),
-    ('Морозов Сергей', 'ООО АльфаТрейд', 'morozov@alfatrade.ru', '+7 925 444-55-66', 'ads'),
-    ('Новикова Татьяна', 'ООО Бьюти Студио', 'novikova@beauty.ru', '+7 985 666-77-88', 'other'),
+    ('Асқар Нұрланұлы Жақсыбеков', 'ТОО Ромашка', 'askar@romashka.kz', '+7 700 100-10-10', 'website'),
+    ('Петрова Анна Сергеевна', 'ИП Петрова', 'a.petrova@gmail.com', '+7 701 222-33-44', 'referral'),
+    ('Бауыржан Сейітұлы Қасымов', 'АО Стройпром', 'bauryzhan@stroyprom.kz', '+7 702 555-77-99', 'ads'),
+    ('Айгүл Маратқызы Дүйсенова', 'ТОО Цветочный мир', 'aigul@flowers.kz', '+7 705 333-22-11', 'social'),
+    ('Дәурен Алмасұлы Байжанов', 'ТОО ТехноСтиль', 'dauren@technostyle.kz', '+7 707 777-88-99', 'website'),
+    ('Лебедева Ольга', 'ИП Лебедева', 'olga.lebedeva@mail.ru', '+7 708 111-22-33', 'referral'),
+    ('Нұржан Ерланұлы Сейітқали', 'ТОО АльфаТрейд', 'nurzhan@alfatrade.kz', '+7 747 444-55-66', 'ads'),
+    ('Дина Қайратқызы Әбенова', 'ТОО Бьюти Студио', 'dina@beauty.kz', '+7 771 666-77-88', 'other'),
 ]
 
 DEAL_TITLES = [
@@ -173,12 +173,12 @@ class Command(BaseCommand):
 
         # Leads
         LEAD_DATA = [
-            ('Захаров Роман', 'ООО МегаСтрой', 'zakhаrov@megastroy.ru', '+7 906 100-20-30', 'ads', 'new'),
-            ('Фролова Ксения', '', 'frolova@yandex.ru', '+7 912 200-30-40', 'social', 'in_progress'),
-            ('Попов Геннадий', 'ИП Попов', 'popov@gmail.com', '+7 919 300-40-50', 'website', 'qualified'),
-            ('Козлова Виктория', 'ООО Цифра', 'kozlova@tsifra.ru', '+7 926 400-50-60', 'referral', 'new'),
-            ('Антонов Игорь', 'ЗАО Логик', 'antonov@logik.ru', '+7 933 500-60-70', 'ads', 'in_progress'),
-            ('Белова Светлана', 'ИП Белова', 'belova@inbox.ru', '+7 940 600-70-80', 'other', 'rejected'),
+            ('Ерлан Серікұлы Мұқанов', 'ТОО МегаСтрой', 'erlan@megastroy.kz', '+7 776 100-20-30', 'ads', 'new'),
+            ('Фролова Ксения', '', 'frolova@mail.ru', '+7 777 200-30-40', 'social', 'in_progress'),
+            ('Попов Геннадий', 'ИП Попов', 'popov@gmail.com', '+7 778 300-40-50', 'website', 'qualified'),
+            ('Зарина Болатқызы Сүлейменова', 'ТОО Цифра', 'zarina@tsifra.kz', '+7 747 400-50-60', 'referral', 'new'),
+            ('Тимур Ғалымұлы Ахметов', 'АО Логик', 'timur@logik.kz', '+7 700 500-60-70', 'ads', 'in_progress'),
+            ('Белова Светлана', 'ИП Белова', 'belova@mail.ru', '+7 701 600-70-80', 'other', 'rejected'),
         ]
         for full_name, company, email, phone, source, status in LEAD_DATA:
             Lead.objects.get_or_create(

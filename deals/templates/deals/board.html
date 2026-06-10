@@ -20,14 +20,14 @@
             <span>{{ col.stage.name }}</span>
             <span class="small">
                 <span class="column-count">{{ col.count }}</span>
-                · <span class="column-total">{{ col.total|floatformat:0 }}</span> ₽
+                · <span class="column-total">{{ col.total|floatformat:0 }}</span> ₸
             </span>
         </div>
         <div class="column-body">
             {% for d in col.deals %}
             <div class="deal-card" data-deal-id="{{ d.id }}" data-amount="{{ d.amount }}">
                 <div class="title"><a href="{{ d.get_absolute_url }}" class="text-decoration-none text-dark">{{ d.title }}</a></div>
-                <div class="amount">{{ d.amount|floatformat:0 }} ₽</div>
+                <div class="amount">{{ d.amount|floatformat:0 }} ₸</div>
                 <div class="client">{{ d.client.full_name }}</div>
                 <div class="d-flex justify-content-between align-items-center mt-1">
                     <small class="text-muted">{{ d.owner|default:'—' }}</small>
