@@ -1,83 +1,73 @@
 {% extends 'base.html' %}
 {% block title %}Отчёты{% endblock %}
-{% block page_title %}Отчёты{% endblock %}
+{% block page_title %}Отчёты и аналитика{% endblock %}
 {% block content %}
 
-<form method="get" class="row g-2 mb-4 align-items-end">
-  <div class="col-md-3">
-    <label class="form-label">С даты</label>
-    <input type="date" name="start" value="{{ start }}" class="form-control">
-  </div>
-  <div class="col-md-3">
-    <label class="form-label">По дату</label>
-    <input type="date" name="end" value="{{ end }}" class="form-control">
-  </div>
-  <div class="col-md-2">
-    <button class="btn btn-primary w-100">Применить</button>
-  </div>
-  <div class="col-md-2">
-    <a href="?" class="btn btn-outline-secondary w-100">Сброс</a>
-  </div>
-  <div class="col-md-1">
-    <a href="{% url 'reports:export_csv' %}?start={{ start }}&end={{ end }}"
-       class="btn btn-outline-success w-100" title="Экспорт сделок CSV">
-      <i class="bi bi-download"></i> Сделки
-    </a>
-  </div>
-  <div class="col-md-1">
-    <a href="{% url 'reports:export_leads_csv' %}"
-       class="btn btn-outline-info w-100" title="Экспорт лидов с AI-скорингом">
-      <i class="bi bi-cpu"></i> Лиды
-    </a>
-  </div>
-</form>
+{# ── Панель фильтра ── #}
+<div class="card mb-4"><div class="card-body">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Период с</label>
+      <input type="date" name="start" value="{{ start }}" class="form-control">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">По</label>
+      <input type="date" name="end" value="{{ end }}" class="form-control">
+    </div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Применить</button></div>
+    <div class="col-md-2"><a href="?" class="btn btn-outline-secondary w-100">Сброс</a></div>
+    <div class="col-md-2 d-flex gap-2">
+      <a href="{% url 'reports:export_csv' %}?start={{ start }}&end={{ end }}" class="btn btn-outline-secondary text-success w-100" title="Экспорт сделок CSV">
+        <i class="bi bi-download"></i> CSV
+      </a>
+    </div>
+  </form>
+</div></div>
 
 {# ── KPI cards ── #}
 <div class="row g-3 mb-4">
-  <div class="col-md-3"><div class="card text-center"><div class="card-body">
-    <div class="text-muted small">Всего сделок</div>
-    <div class="h3">{{ total }}</div>
-  </div></div></div>
-  <div class="col-md-3"><div class="card text-center bg-success-subtle"><div class="card-body">
-    <div class="text-muted small">Успешных</div>
-    <div class="h3 text-success">{{ won }}</div>
-  </div></div></div>
-  <div class="col-md-3"><div class="card text-center bg-secondary-subtle"><div class="card-body">
-    <div class="text-muted small">Отказов</div>
-    <div class="h3">{{ lost }}</div>
-  </div></div></div>
-  <div class="col-md-3"><div class="card text-center bg-warning-subtle"><div class="card-body">
-    <div class="text-muted small">Конверсия</div>
-    <div class="h3">{{ conversion }}%</div>
-  </div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="stat-card">
+    <span class="stat-ico ico-blue"><i class="bi bi-briefcase-fill"></i></span>
+    <div><div class="stat-label">Всего сделок</div><div class="stat-value">{{ total }}</div></div>
+  </div></div>
+  <div class="col-sm-6 col-xl-3"><div class="stat-card">
+    <span class="stat-ico ico-green"><i class="bi bi-check-circle-fill"></i></span>
+    <div><div class="stat-label">Успешных</div><div class="stat-value text-success">{{ won }}</div></div>
+  </div></div>
+  <div class="col-sm-6 col-xl-3"><div class="stat-card">
+    <span class="stat-ico ico-red"><i class="bi bi-x-circle-fill"></i></span>
+    <div><div class="stat-label">Отказов</div><div class="stat-value">{{ lost }}</div></div>
+  </div></div>
+  <div class="col-sm-6 col-xl-3"><div class="stat-card">
+    <span class="stat-ico ico-purple"><i class="bi bi-graph-up-arrow"></i></span>
+    <div><div class="stat-label">Конверсия</div><div class="stat-value">{{ conversion }}%</div></div>
+  </div></div>
 </div>
 
-{# ── AI Widget: Hot leads requiring attention ── #}
+{# ── AI Widget: Hot leads ── #}
 {% if hot_stale_leads %}
-<div class="card border-danger mb-4">
-  <div class="card-header bg-danger text-white fw-semibold">
-    <i class="bi bi-fire me-1"></i>
-    Горячие лиды без активности более 1 часа
-    <span class="badge bg-white text-danger ms-1">{{ hot_stale_leads|length }}</span>
+<div class="card mb-4">
+  <div class="card-header d-flex align-items-center">
+    <span class="feed-ico ico-red me-2"><i class="bi bi-fire"></i></span>
+    Горячие необработанные лиды
+    <span class="badge bg-danger ms-2">{{ hot_stale_leads|length }}</span>
   </div>
-  <div class="card-body p-0">
-    <table class="table table-sm mb-0">
-      <thead class="table-light">
-        <tr><th>Лид</th><th>Источник</th><th>Балл</th><th>Создан</th><th>Ответственный</th><th></th></tr>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Имя</th><th>Источник</th><th>AI-балл</th><th>Создан</th><th>Ответственный</th><th class="text-end">Позвонить</th></tr>
       </thead>
       <tbody>
       {% for lead in hot_stale_leads %}
       <tr>
-        <td><a href="{{ lead.get_absolute_url }}">{{ lead.full_name }}</a></td>
-        <td><small>{{ lead.get_source_display }}</small></td>
-        <td><span class="badge bg-danger">{{ lead.score }}</span></td>
-        <td><small class="text-muted">{{ lead.created_at|date:"d.m H:i" }}</small></td>
-        <td><small>{{ lead.owner|default:'—' }}</small></td>
-        <td>
+        <td><a href="{{ lead.get_absolute_url }}" class="cell-title text-decoration-none">{{ lead.full_name }}</a></td>
+        <td>{{ lead.get_source_display }}</td>
+        <td><span class="score-pill {% if lead.score >= 70 %}score-hot{% elif lead.score >= 50 %}score-warm{% else %}score-cold{% endif %}">{{ lead.score }}</span></td>
+        <td class="cell-sub">{{ lead.created_at|date:"d.m.Y H:i" }}</td>
+        <td>{{ lead.owner|default:'—' }}</td>
+        <td class="text-end">
           {% if lead.phone %}
-          <a href="tel:{{ lead.phone }}" class="btn btn-sm btn-success py-0">
-            <i class="bi bi-telephone"></i>
-          </a>
+          <a href="tel:{{ lead.phone }}" class="act-btn act-edit" style="background:var(--c-success-50);color:var(--c-success)"><i class="bi bi-telephone-fill"></i></a>
           {% endif %}
         </td>
       </tr>
@@ -90,94 +80,86 @@
 
 {# ── Charts row 1 ── #}
 <div class="row g-3 mb-3">
-  <div class="col-md-6">
-    <div class="card"><div class="card-body">
-      <h6>Сделки по этапам воронки</h6>
-      <canvas id="chartStage" height="220"></canvas>
-    </div></div>
-  </div>
-  <div class="col-md-6">
-    <div class="card"><div class="card-body">
-      <h6>Сумма сделок по месяцам</h6>
-      <canvas id="chartMonth" height="220"></canvas>
-    </div></div>
-  </div>
+  <div class="col-md-6"><div class="card"><div class="card-body">
+    <div class="section-head"><h6>Сделки по этапам воронки</h6></div>
+    <canvas id="chartStage" height="220"></canvas>
+  </div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body">
+    <div class="section-head"><h6>Сумма сделок по месяцам</h6></div>
+    <canvas id="chartMonth" height="220"></canvas>
+  </div></div></div>
 </div>
 
 {# ── Charts row 2 ── #}
 <div class="row g-3 mb-3">
-  <div class="col-md-4">
-    <div class="card"><div class="card-body">
-      <h6><i class="bi bi-cpu me-1 text-primary"></i> Распределение по приоритетам</h6>
-      <canvas id="chartPriority" height="220"></canvas>
-    </div></div>
-  </div>
-  <div class="col-md-8">
-    <div class="card"><div class="card-body">
-      <h6><i class="bi bi-bar-chart me-1 text-success"></i> Конверсия по источникам лидов</h6>
-      <canvas id="chartSourceConv" height="220"></canvas>
-    </div></div>
-  </div>
+  <div class="col-md-4"><div class="card"><div class="card-body">
+    <div class="section-head"><h6><i class="bi bi-cpu me-1 text-primary"></i>Распределение по приоритетам</h6></div>
+    <canvas id="chartPriority" height="220"></canvas>
+  </div></div></div>
+  <div class="col-md-8"><div class="card"><div class="card-body">
+    <div class="section-head"><h6><i class="bi bi-bar-chart me-1 text-success"></i>Конверсия по источникам лидов</h6></div>
+    <canvas id="chartSourceConv" height="220"></canvas>
+  </div></div></div>
 </div>
 
-{# ── Row 3: Status pie + top managers ── #}
+{# ── Row 3 ── #}
 <div class="row g-3">
-  <div class="col-md-4">
-    <div class="card"><div class="card-body">
-      <h6>Распределение статусов сделок</h6>
-      <canvas id="chartStatus" height="220"></canvas>
-    </div></div>
-  </div>
-  <div class="col-md-8">
-    <div class="card"><div class="card-body">
-      <h6>ТОП-5 менеджеров (по выручке)</h6>
-      <table class="table table-sm mb-0">
-        <thead><tr><th>Менеджер</th><th>Сделок</th><th>Сумма</th></tr></thead>
+  <div class="col-md-4"><div class="card"><div class="card-body">
+    <div class="section-head"><h6>Распределение статусов сделок</h6></div>
+    <canvas id="chartStatus" height="220"></canvas>
+  </div></div></div>
+  <div class="col-md-8"><div class="card">
+    <div class="card-header"><i class="bi bi-trophy-fill me-2 text-warning"></i>ТОП-5 менеджеров по выручке</div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Менеджер</th><th>Сделок</th><th class="text-end">Сумма</th></tr></thead>
         <tbody>
         {% for m in top_managers %}
         <tr>
-          <td>{{ m.owner__first_name }} {{ m.owner__last_name }}
-            <small class="text-muted">({{ m.owner__username|default:'—' }})</small></td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="avatar-initials" style="width:32px;height:32px;flex-basis:32px;font-size:.72rem">{{ m.owner__first_name|default:m.owner__username|slice:":1"|upper }}</span>
+              <div>
+                <div class="cell-title">{{ m.owner__first_name }} {{ m.owner__last_name }}</div>
+                <div class="cell-sub">{{ m.owner__username|default:'—' }}</div>
+              </div>
+            </div>
+          </td>
           <td>{{ m.n }}</td>
-          <td>{{ m.amount|floatformat:0 }} ₸</td>
+          <td class="text-end fw-bold text-success">{{ m.amount|floatformat:0 }} ₸</td>
         </tr>
         {% empty %}
-        <tr><td colspan="3" class="text-muted text-center">Нет данных</td></tr>
+        <tr><td colspan="3" class="text-muted text-center py-3">Нет данных</td></tr>
         {% endfor %}
         </tbody>
-        <tfoot><tr class="table-light">
-          <th>Итого выручка</th><th></th><th>{{ total_revenue|floatformat:0 }} ₸</th>
+        <tfoot><tr style="background:var(--c-bg)">
+          <th>Итого выручка</th><th></th><th class="text-end">{{ total_revenue|floatformat:0 }} ₸</th>
         </tr></tfoot>
       </table>
-    </div></div>
-  </div>
+    </div>
+  </div></div>
 </div>
 
 {# ── Source conversion table ── #}
 <div class="card mt-3">
-  <div class="card-header fw-semibold">
-    <i class="bi bi-funnel me-1"></i> Детальная конверсия по источникам
-  </div>
-  <div class="card-body p-0">
-    <table class="table table-sm mb-0">
-      <thead class="table-light">
-        <tr><th>Источник</th><th>Всего лидов</th><th>Конвертировано</th><th>Конверсия</th><th></th></tr>
-      </thead>
+  <div class="card-header"><i class="bi bi-funnel me-2"></i>Детальная конверсия по источникам</div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Источник</th><th>Всего лидов</th><th>Конвертировано</th><th style="width:35%">Конверсия</th></tr></thead>
       <tbody>
       {% for row in source_conversion %}
       <tr>
-        <td>{{ row.source }}</td>
+        <td class="cell-title">{{ row.source }}</td>
         <td>{{ row.total }}</td>
         <td>{{ row.converted }}</td>
         <td>
           <div class="d-flex align-items-center gap-2">
-            <div class="progress flex-grow-1" style="height:6px;">
-              <div class="progress-bar bg-success" style="width:{{ row.rate }}%"></div>
+            <div class="progress flex-grow-1" style="height:8px;border-radius:6px">
+              <div class="progress-bar" style="width:{{ row.rate }}%;background:var(--c-success)"></div>
             </div>
-            <span class="text-nowrap">{{ row.rate }}%</span>
+            <span class="text-nowrap fw-semibold small">{{ row.rate }}%</span>
           </div>
         </td>
-        <td></td>
       </tr>
       {% endfor %}
       </tbody>
@@ -195,6 +177,11 @@
 {{ source_conversion|json_script:"data-source-conv" }}
 <script>
 (function(){
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.color = '#8b93a7';
+    Chart.defaults.plugins.legend.labels.boxWidth = 12;
+    Chart.defaults.plugins.legend.labels.boxHeight = 12;
+
     const stages = JSON.parse(document.getElementById('data-stage').textContent);
     const months = JSON.parse(document.getElementById('data-month').textContent);
     const priorities = JSON.parse(document.getElementById('data-priority').textContent);
@@ -202,54 +189,41 @@
 
     new Chart(document.getElementById('chartStage'), {
         type: 'bar',
-        data: {
-            labels: stages.map(s => s.name),
+        data: { labels: stages.map(s => s.name),
             datasets: [{ label: 'Сделок', data: stages.map(s => s.n || 0),
-                backgroundColor: stages.map(s => s.color || '#0d6efd') }]
-        },
-        options: { plugins: { legend: { display: false } } }
+                backgroundColor: stages.map(s => s.color || '#3b5bdb'), borderRadius: 6 }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#eef1f7' } }, x: { grid: { display: false } } } }
     });
 
     new Chart(document.getElementById('chartMonth'), {
         type: 'line',
-        data: {
-            labels: months.map(m => m.month),
+        data: { labels: months.map(m => m.month),
             datasets: [{ label: 'Сумма (₸)', data: months.map(m => m.amount),
-                borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.15)',
-                tension: .3, fill: true }]
-        }
+                borderColor: '#3b5bdb', backgroundColor: 'rgba(59,91,219,.12)', tension: .35, fill: true, pointRadius: 3 }] },
+        options: { scales: { y: { grid: { color: '#eef1f7' } }, x: { grid: { display: false } } } }
     });
 
     new Chart(document.getElementById('chartStatus'), {
         type: 'doughnut',
-        data: {
-            labels: ['Успешные', 'Отказы', 'Открытые'],
-            datasets: [{ data: [{{ won }}, {{ lost }}, {{ open }}],
-                backgroundColor: ['#198754', '#6c757d', '#0dcaf0'] }]
-        }
+        data: { labels: ['Успешные', 'Отказы', 'Открытые'],
+            datasets: [{ data: [{{ won }}, {{ lost }}, {{ open }}], backgroundColor: ['#189e6a', '#e2483d', '#2c9ec4'], borderWidth: 2 }] },
+        options: { cutout: '62%' }
     });
 
     new Chart(document.getElementById('chartPriority'), {
         type: 'doughnut',
-        data: {
-            labels: priorities.map(p => p.label),
-            datasets: [{ data: priorities.map(p => p.n),
-                backgroundColor: ['#E53E3E', '#D69E2E', '#718096'] }]
-        }
+        data: { labels: priorities.map(p => p.label),
+            datasets: [{ data: priorities.map(p => p.n), backgroundColor: ['#e2483d', '#e0902b', '#8b93a7'], borderWidth: 2 }] },
+        options: { cutout: '62%' }
     });
 
     new Chart(document.getElementById('chartSourceConv'), {
         type: 'bar',
-        data: {
-            labels: srcConv.map(r => r.source),
+        data: { labels: srcConv.map(r => r.source),
             datasets: [
-                { label: 'Всего лидов', data: srcConv.map(r => r.total),
-                  backgroundColor: 'rgba(13,110,253,.3)' },
-                { label: 'Конвертировано', data: srcConv.map(r => r.converted),
-                  backgroundColor: '#198754' },
-            ]
-        },
-        options: { scales: { y: { beginAtZero: true } } }
+                { label: 'Всего лидов', data: srcConv.map(r => r.total), backgroundColor: 'rgba(59,91,219,.25)', borderRadius: 6 },
+                { label: 'Конвертировано', data: srcConv.map(r => r.converted), backgroundColor: '#189e6a', borderRadius: 6 } ] },
+        options: { scales: { y: { beginAtZero: true, grid: { color: '#eef1f7' } }, x: { grid: { display: false } } } }
     });
 })();
 </script>

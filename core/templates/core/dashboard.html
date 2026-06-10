@@ -5,56 +5,74 @@
 
 {# ── Hot leads banner ── #}
 {% if hot_stale_count %}
-<a href="{% url 'leads:list' %}?priority=hot" class="text-decoration-none">
-  <div class="alert alert-danger d-flex align-items-center mb-3 py-2">
-    <i class="bi bi-fire me-2 fs-5"></i>
-    <strong>🔥 {{ hot_stale_count }} горяч{{ hot_stale_count|pluralize:"ий лид ждёт,их лида ждут,их лидов ждут" }} звонка более 30 минут</strong>
-    <span class="ms-auto btn btn-sm btn-danger">Перейти →</span>
+<a href="{% url 'leads:list' %}?priority=hot" class="banner-alert">
+  <span class="b-ico"><i class="bi bi-fire"></i></span>
+  <div class="flex-grow-1">
+    <strong>{{ hot_stale_count }} горяч{{ hot_stale_count|pluralize:"ий лид ждёт,их лида ждут,их лидов ждут" }} звонка более 30 минут</strong>
+    <div class="small">Свяжитесь с ними, пока интерес не остыл.</div>
   </div>
+  <span class="btn btn-sm" style="background:var(--c-danger);color:#fff">Перейти →</span>
 </a>
 {% endif %}
 
 {# ── KPI Cards ── #}
 <div class="row g-3 mb-4">
-  <div class="col-md-3"><div class="card"><div class="card-body">
-    <div class="text-muted small">Клиенты</div>
-    <div class="h2">{{ clients_count }}</div>
-    <a href="{% url 'clients:list' %}" class="small">Перейти →</a>
-  </div></div></div>
-
-  <div class="col-md-3"><div class="card"><div class="card-body">
-    <div class="text-muted small">Открытых сделок</div>
-    <div class="h2 text-info">{{ deals_open }}</div>
-    <a href="{% url 'deals:board' %}" class="small">Воронка →</a>
-  </div></div></div>
-
-  <div class="col-md-3"><div class="card {% if hot_count %}border-danger{% endif %}"><div class="card-body">
-    <div class="text-muted small">Горячих лидов</div>
-    <div class="h2 {% if hot_count %}text-danger{% endif %}">{{ hot_count }}</div>
-    <a href="{% url 'leads:list' %}?priority=hot" class="small">
-      {% if hot_count %}Обработать →{% else %}Все лиды →{% endif %}
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'clients:list' %}" class="stat-card">
+      <span class="stat-ico ico-blue"><i class="bi bi-people-fill"></i></span>
+      <div>
+        <div class="stat-label">Клиенты</div>
+        <div class="stat-value">{{ clients_count }}</div>
+        <div class="stat-sub text-muted">Всего в базе</div>
+      </div>
     </a>
-  </div></div></div>
-
-  <div class="col-md-3"><div class="card"><div class="card-body">
-    <div class="text-muted small">Выручка за месяц</div>
-    <div class="h2 text-success">{{ revenue_this_month|floatformat:0 }} ₸</div>
-  </div></div></div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'deals:board' %}" class="stat-card">
+      <span class="stat-ico ico-purple"><i class="bi bi-briefcase-fill"></i></span>
+      <div>
+        <div class="stat-label">Открытых сделок</div>
+        <div class="stat-value">{{ deals_open }}</div>
+        <div class="stat-sub text-muted">На всех этапах</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'leads:list' %}?priority=hot" class="stat-card">
+      <span class="stat-ico ico-red"><i class="bi bi-fire"></i></span>
+      <div>
+        <div class="stat-label">Горячих лидов</div>
+        <div class="stat-value {% if hot_count %}text-danger{% endif %}">{{ hot_count }}</div>
+        <div class="stat-sub text-muted">Требуют внимания</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <span class="stat-ico ico-green"><i class="bi bi-cash-stack"></i></span>
+      <div>
+        <div class="stat-label">Выручка за месяц</div>
+        <div class="stat-value text-success">{{ revenue_this_month|floatformat:0 }} ₸</div>
+        <div class="stat-sub text-muted">Закрытые сделки</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 {# ── Main grid ── #}
 <div class="row g-3">
 
-  {# Mini-board + Interactions #}
   <div class="col-lg-7">
     <div class="card mb-3"><div class="card-body">
-      <h6 class="mb-3">Мини-воронка</h6>
-      <div class="d-flex gap-2 flex-wrap">
+      <div class="section-head">
+        <h6>Мини-воронка</h6>
+        <a href="{% url 'deals:board' %}" class="small fw-semibold text-decoration-none">Открыть воронку →</a>
+      </div>
+      <div class="mini-funnel">
         {% for col in mini_board %}
-        <div class="border rounded p-2 flex-grow-1 text-center"
-             style="min-width: 120px; border-top: 4px solid {{ col.stage.color }} !important;">
-          <div class="small text-muted">{{ col.stage.name }}</div>
-          <div class="h4 mb-0">{{ col.count }}</div>
+        <div class="mini-stage" style="border-top-color: {{ col.stage.color }}">
+          <div class="ms-name">{{ col.stage.name }}</div>
+          <div class="ms-count">{{ col.count }}</div>
         </div>
         {% empty %}
         <p class="text-muted mb-0">Воронка не настроена.</p>
@@ -63,70 +81,62 @@
     </div></div>
 
     <div class="card"><div class="card-body">
-      <h6 class="mb-3">Последние взаимодействия</h6>
-      <ul class="list-unstyled mb-0">
-        {% for i in recent_interactions %}
-        <li class="mb-2 d-flex justify-content-between">
-          <div>
-            <i class="bi {{ i.icon }} text-primary"></i>
-            <a href="{% url 'clients:detail' i.client.pk %}">{{ i.client.full_name }}</a>
-            — <small class="text-muted">{{ i.subject|default:i.get_type_display }}</small>
+      <div class="section-head">
+        <h6>Последние взаимодействия</h6>
+      </div>
+      {% for i in recent_interactions %}
+      <div class="feed-item">
+        <span class="feed-ico ico-{% if i.type == 'call' %}green{% elif i.type == 'email' %}blue{% elif i.type == 'meeting' %}purple{% else %}cyan{% endif %}">
+          <i class="bi {{ i.icon }}"></i>
+        </span>
+        <div class="flex-grow-1 min-vw-0">
+          <div class="d-flex justify-content-between gap-2">
+            <a href="{% url 'clients:detail' i.client.pk %}" class="cell-title text-decoration-none text-truncate">{{ i.client.full_name }}</a>
+            <small class="text-muted text-nowrap">{{ i.created_at|date:'d.m H:i' }}</small>
           </div>
-          <small class="text-muted">{{ i.created_at|date:'d.m H:i' }}</small>
-        </li>
-        {% empty %}
-        <li class="text-muted">Пока пусто</li>
-        {% endfor %}
-      </ul>
+          <div class="cell-sub text-truncate">{{ i.subject|default:i.get_type_display }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted mb-0">Пока пусто</p>
+      {% endfor %}
     </div></div>
   </div>
 
   {# Leaderboard #}
   <div class="col-lg-5">
     <div class="card">
-      <div class="card-header fw-semibold d-flex justify-content-between">
-        <span><i class="bi bi-trophy me-1 text-warning"></i> Рейтинг менеджеров</span>
-        <small class="text-muted">текущий месяц</small>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-trophy-fill me-2 text-warning"></i>Рейтинг менеджеров</span>
+        <span class="chip">текущий месяц</span>
       </div>
-      <div class="card-body p-0">
+      <div class="card-body">
         {% if leaderboard %}
-        <table class="table table-sm mb-0">
-          <tbody>
-          {% for row in leaderboard %}
-          <tr {% if row.owner__id == request.user.id %}class="table-warning"{% endif %}>
-            <td class="text-center fw-bold ps-3">
-              {% if row.rank == 1 %}🥇
-              {% elif row.rank == 2 %}🥈
-              {% elif row.rank == 3 %}🥉
-              {% else %}{{ row.rank }}{% endif %}
-            </td>
-            <td>
-              <span class="fw-semibold">{{ row.name }}</span>
-              {% if row.owner__id == request.user.id %}
-              <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">вы</span>
-              {% endif %}
-            </td>
-            <td class="text-end text-muted small">{{ row.deals_closed }} сд.</td>
-            <td class="text-end pe-3">
-              <span class="badge bg-primary">{{ row.points }} очков</span>
-            </td>
-          </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-        {% if current_user_rank and current_user_rank > 5 %}
-        <div class="px-3 py-2 border-top text-muted small">
-          Ваша позиция: #{{ current_user_rank }}
+        {% for row in leaderboard %}
+        <div class="lb-row {% if row.owner__id == request.user.id %}px-2 rounded{% endif %}"
+             {% if row.owner__id == request.user.id %}style="background:var(--c-primary-50)"{% endif %}>
+          <span class="lb-rank {% if row.rank <= 3 %}medal{% endif %}">
+            {% if row.rank == 1 %}🥇{% elif row.rank == 2 %}🥈{% elif row.rank == 3 %}🥉{% else %}{{ row.rank }}{% endif %}
+          </span>
+          <span class="avatar-initials" style="width:34px;height:34px;flex-basis:34px;font-size:.75rem">{{ row.name|slice:":1"|upper }}</span>
+          <div class="min-vw-0">
+            <div class="lb-name text-truncate">{{ row.name }}
+              {% if row.owner__id == request.user.id %}<span class="badge bg-primary ms-1" style="font-size:.6rem">вы</span>{% endif %}
+            </div>
+            <div class="lb-meta">{{ row.deals_closed }} сделок закрыто</div>
+          </div>
+          <span class="lb-points badge bg-primary">{{ row.points }} очков</span>
         </div>
+        {% endfor %}
+        {% if current_user_rank and current_user_rank > 5 %}
+        <div class="pt-2 mt-2 border-top text-muted small">Ваша позиция: #{{ current_user_rank }}</div>
         {% endif %}
         {% else %}
-        <p class="text-muted text-center py-3 mb-0">
-          Нет закрытых сделок в этом месяце
-        </p>
+        <p class="text-muted text-center py-3 mb-0">Нет закрытых сделок в этом месяце</p>
         {% endif %}
       </div>
       <div class="card-footer text-end">
-        <a href="{% url 'reports:index' %}" class="small">Полные отчёты →</a>
+        <a href="{% url 'reports:index' %}" class="small fw-semibold text-decoration-none">Полные отчёты →</a>
       </div>
     </div>
   </div>

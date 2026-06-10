@@ -3,12 +3,16 @@
 {% block title %}Воронка продаж{% endblock %}
 {% block page_title %}Воронка продаж{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <p class="text-muted mb-0">Перетащите карточку в нужный этап, чтобы изменить статус сделки.</p>
-    <div>
-        <a href="{% url 'deals:list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list"></i> Список</a>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="view-switch">
+        <a href="{% url 'deals:board' %}" class="active"><i class="bi bi-columns-gap"></i> Канбан</a>
+        <a href="{% url 'deals:list' %}"><i class="bi bi-list-ul"></i> Список</a>
+        <a href="{% url 'reports:index' %}"><i class="bi bi-bar-chart"></i> Диаграмма</a>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small d-none d-md-inline">Перетащите карточку, чтобы сменить этап</span>
         {% if user.can_edit %}
-        <a href="{% url 'deals:create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Сделка</a>
+        <a href="{% url 'deals:create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Создать сделку</a>
         {% endif %}
     </div>
 </div>
@@ -18,22 +22,25 @@
     <div class="board-column" data-stage-id="{{ col.stage.id }}">
         <div class="column-header" style="background: {{ col.stage.color }}">
             <span>{{ col.stage.name }}</span>
-            <span class="small">
-                <span class="column-count">{{ col.count }}</span>
-                · <span class="column-total">{{ col.total|floatformat:0 }}</span> ₸
+            <span class="col-meta">
+                <span class="column-count">{{ col.count }}</span> сделок ·
+                <span class="column-total">{{ col.total|floatformat:0 }}</span> ₸
             </span>
         </div>
         <div class="column-body">
             {% for d in col.deals %}
-            <div class="deal-card" data-deal-id="{{ d.id }}" data-amount="{{ d.amount }}">
-                <div class="title"><a href="{{ d.get_absolute_url }}" class="text-decoration-none text-dark">{{ d.title }}</a></div>
+            <div class="deal-card" data-deal-id="{{ d.id }}" data-amount="{{ d.amount }}"
+                 style="border-left-color: {{ col.stage.color }}">
+                <div class="title"><a href="{{ d.get_absolute_url }}" class="text-decoration-none">{{ d.title }}</a></div>
                 <div class="amount">{{ d.amount|floatformat:0 }} ₸</div>
-                <div class="client">{{ d.client.full_name }}</div>
-                <div class="d-flex justify-content-between align-items-center mt-1">
-                    <small class="text-muted">{{ d.owner|default:'—' }}</small>
-                    <span class="status-badge badge bg-light text-dark border" data-status="{{ d.status }}">{{ d.get_status_display }}</span>
+                <div class="client"><i class="bi bi-building me-1"></i>{{ d.client.full_name }}</div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <small class="text-muted"><i class="bi bi-person me-1"></i>{{ d.owner|default:'—' }}</small>
+                    <span class="status-badge chip" data-status="{{ d.status }}">{{ d.get_status_display }}</span>
                 </div>
             </div>
+            {% empty %}
+            <div class="text-center text-muted small py-3">Пусто</div>
             {% endfor %}
         </div>
     </div>

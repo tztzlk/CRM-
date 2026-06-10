@@ -1,68 +1,68 @@
 {% extends 'base.html' %}
 {% block title %}{{ client.full_name }}{% endblock %}
-{% block page_title %}{{ client.full_name }}{% endblock %}
+{% block page_title %}Карточка клиента{% endblock %}
 {% block content %}
-<div class="row g-3">
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="mb-3">Контакты</h5>
-                <dl class="row mb-0">
-                    <dt class="col-sm-5">Компания</dt><dd class="col-sm-7">{{ client.company|default:'—' }}</dd>
-                    <dt class="col-sm-5">Телефон</dt><dd class="col-sm-7">{{ client.phone|default:'—' }}</dd>
-                    <dt class="col-sm-5">Email</dt><dd class="col-sm-7">{{ client.email|default:'—' }}</dd>
-                    <dt class="col-sm-5">Источник</dt><dd class="col-sm-7">{{ client.get_source_display }}</dd>
-                    <dt class="col-sm-5">Ответственный</dt><dd class="col-sm-7">{{ client.owner|default:'—' }}</dd>
-                    <dt class="col-sm-5">Создан</dt><dd class="col-sm-7">{{ client.created_at|date:'d.m.Y H:i' }}</dd>
-                </dl>
-                {% if client.notes %}
-                <hr><div class="text-muted small">{{ client.notes|linebreaksbr }}</div>
-                {% endif %}
-                {% if user.can_edit %}
-                <div class="mt-3 d-flex gap-2">
-                    <a href="{% url 'clients:edit' client.pk %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
-                    <a href="{% url 'clients:delete' client.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 
-    <div class="col-lg-8">
+<div class="d-flex align-items-center gap-2 mb-3">
+    <a href="{% url 'clients:list' %}" class="act-btn act-view" title="Назад"><i class="bi bi-arrow-left"></i></a>
+    <span class="text-muted small">Клиенты / {{ client.full_name }}</span>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        {# ── Основная информация ── #}
         <div class="card mb-3">
             <div class="card-body">
-                <div class="d-flex justify-content-between mb-2">
-                    <h5 class="mb-0">Сделки</h5>
+                <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="avatar-initials avatar-lg">{{ client.full_name|slice:":1"|upper }}</span>
+                        <div>
+                            <h4 class="mb-1">{{ client.full_name }}</h4>
+                            <span class="chip chip-green"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> Активный</span>
+                        </div>
+                    </div>
                     {% if user.can_edit %}
-                    <a href="{% url 'deals:create' %}?client={{ client.pk }}" class="btn btn-sm btn-primary">
-                        <i class="bi bi-plus-lg"></i> Сделка
-                    </a>
+                    <a href="{% url 'clients:edit' client.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil"></i> Редактировать</a>
                     {% endif %}
                 </div>
-                {% if deals %}
-                <table class="table table-sm align-middle mb-0">
-                    <thead><tr><th>Название</th><th>Этап</th><th>Статус</th><th>Сумма</th><th></th></tr></thead>
-                    <tbody>
-                    {% for d in deals %}
-                    <tr>
-                        <td><a href="{{ d.get_absolute_url }}">{{ d.title }}</a></td>
-                        <td><span class="badge" style="background:{{ d.stage.color }}">{{ d.stage.name }}</span></td>
-                        <td>{{ d.get_status_display }}</td>
-                        <td>{{ d.amount|floatformat:0 }}</td>
-                        <td class="text-end"><a class="btn btn-sm btn-link" href="{{ d.get_absolute_url }}">→</a></td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}<p class="text-muted mb-0">Сделок пока нет</p>{% endif %}
+
+                <hr class="soft-divider">
+
+                <dl class="row dl-clean mb-0">
+                    <dt class="col-sm-4"><i class="bi bi-building me-1"></i>Компания</dt>
+                    <dd class="col-sm-8">{{ client.company|default:'—' }}</dd>
+                    <dt class="col-sm-4"><i class="bi bi-telephone me-1"></i>Телефон</dt>
+                    <dd class="col-sm-8">{{ client.phone|default:'—' }}</dd>
+                    <dt class="col-sm-4"><i class="bi bi-envelope me-1"></i>Email</dt>
+                    <dd class="col-sm-8">{{ client.email|default:'—' }}</dd>
+                    <dt class="col-sm-4"><i class="bi bi-broadcast me-1"></i>Источник</dt>
+                    <dd class="col-sm-8">{{ client.get_source_display }}</dd>
+                    <dt class="col-sm-4"><i class="bi bi-person-badge me-1"></i>Ответственный</dt>
+                    <dd class="col-sm-8">{{ client.owner|default:'—' }}</dd>
+                    <dt class="col-sm-4"><i class="bi bi-calendar3 me-1"></i>Добавлен</dt>
+                    <dd class="col-sm-8">{{ client.created_at|date:'d.m.Y H:i' }}</dd>
+                </dl>
+
+                {% if client.notes %}
+                <hr class="soft-divider">
+                <div class="text-muted small fw-semibold mb-1">Заметки</div>
+                <div class="text-ink small">{{ client.notes|linebreaksbr }}</div>
+                {% endif %}
+
+                {% if user.can_edit %}
+                <hr class="soft-divider">
+                <a href="{% url 'clients:delete' client.pk %}" class="btn btn-sm btn-outline-secondary text-danger"><i class="bi bi-trash"></i> Удалить клиента</a>
+                {% endif %}
             </div>
         </div>
 
+        {# ── Лента взаимодействий ── #}
         <div class="card">
             <div class="card-body">
-                <h5>История взаимодействий</h5>
+                <div class="section-head"><h6>Лента взаимодействий</h6></div>
+
                 {% if user.can_edit %}
-                <form method="post" action="{% url 'interactions:add_for_client' client.pk %}" class="border rounded p-2 mb-3">
+                <form method="post" action="{% url 'interactions:add_for_client' client.pk %}" class="border rounded-3 p-2 mb-3" style="background:var(--c-bg)">
                     {% csrf_token %}
                     <div class="row g-2">
                         <div class="col-md-3">
@@ -74,43 +74,67 @@
                                 <option value="note" selected>Заметка</option>
                             </select>
                         </div>
+                        <div class="col-md-5"><input name="subject" class="form-control form-control-sm" placeholder="Тема"></div>
                         <div class="col-md-4">
-                            <input name="subject" class="form-control form-control-sm" placeholder="Тема">
-                        </div>
-                        <div class="col-md-3">
                             <select name="deal" class="form-select form-select-sm">
                                 <option value="">— без сделки —</option>
                                 {% for d in deals %}<option value="{{ d.id }}">{{ d.title }}</option>{% endfor %}
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-sm btn-primary w-100">Добавить</button>
-                        </div>
-                        <div class="col-12">
-                            <textarea name="content" rows="2" class="form-control form-control-sm" placeholder="Содержание" required></textarea>
-                        </div>
+                        <div class="col-12"><textarea name="content" rows="2" class="form-control form-control-sm" placeholder="Содержание" required></textarea></div>
+                        <div class="col-12 text-end"><button class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Добавить взаимодействие</button></div>
                     </div>
                 </form>
                 {% endif %}
 
-                <div class="timeline">
-                    {% for i in interactions %}
-                    <div class="timeline-item">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <i class="bi {{ i.icon }}"></i>
-                                <strong>{{ i.get_type_display }}</strong>
-                                {% if i.subject %}— {{ i.subject }}{% endif %}
-                                {% if i.deal %}<span class="badge bg-light text-dark border ms-1">{{ i.deal.title }}</span>{% endif %}
-                            </div>
-                            <small class="text-muted">{{ i.created_at|date:'d.m.Y H:i' }} · {{ i.author|default:'—' }}</small>
+                {% for i in interactions %}
+                <div class="feed-item">
+                    <span class="feed-ico ico-{% if i.type == 'call' %}green{% elif i.type == 'email' %}blue{% elif i.type == 'meeting' %}purple{% else %}cyan{% endif %}">
+                        <i class="bi {{ i.icon }}"></i>
+                    </span>
+                    <div class="flex-grow-1 min-vw-0">
+                        <div class="d-flex justify-content-between gap-2">
+                            <span class="cell-title">{{ i.get_type_display }}{% if i.subject %} — {{ i.subject }}{% endif %}</span>
+                            <small class="text-muted text-nowrap">{{ i.created_at|date:'d.m.Y H:i' }}</small>
                         </div>
-                        <div class="text-secondary small mt-1">{{ i.content|linebreaksbr }}</div>
+                        {% if i.deal %}<span class="chip mt-1">{{ i.deal.title }}</span>{% endif %}
+                        <div class="cell-sub mt-1">{{ i.content|linebreaksbr }}</div>
+                        <div class="cell-sub mt-1"><i class="bi bi-person me-1"></i>{{ i.author|default:'—' }}</div>
                     </div>
-                    {% empty %}
-                    <p class="text-muted mb-0">Записей пока нет</p>
-                    {% endfor %}
                 </div>
+                {% empty %}
+                <p class="text-muted mb-0">Записей пока нет</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Связанные сделки ── #}
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Связанные сделки <span class="badge bg-secondary ms-1">{{ deals|length }}</span></span>
+                {% if user.can_edit %}
+                <a href="{% url 'deals:create' %}?client={{ client.pk }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg"></i> Создать</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% for d in deals %}
+                <a href="{{ d.get_absolute_url }}" class="d-block text-decoration-none border rounded-3 p-3 mb-2"
+                   style="border-color:var(--c-border)!important;border-left:3px solid {{ d.stage.color }}!important">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <span class="cell-title">{{ d.title }}</span>
+                        <span class="badge" style="background:{{ d.stage.color }}">{{ d.stage.name }}</span>
+                    </div>
+                    <div class="amount text-success fw-bold mt-1">{{ d.amount|floatformat:0 }} ₸</div>
+                    <div class="cell-sub mt-1">
+                        <i class="bi bi-person me-1"></i>{{ d.owner|default:'—' }}
+                        {% if d.expected_close_date %}<span class="ms-2"><i class="bi bi-calendar-check me-1"></i>{{ d.expected_close_date|date:'d.m.Y' }}</span>{% endif %}
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-muted mb-0">Сделок пока нет</p>
+                {% endfor %}
             </div>
         </div>
     </div>
